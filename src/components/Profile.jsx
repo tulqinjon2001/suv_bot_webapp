@@ -167,9 +167,6 @@ export default function Profile({ customerId, onBack }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Lokatsiya (ixtiyoriy)
-          </label>
           <LocationPicker
             onSelect={handleLocationSelect}
             initialLocation={location}
