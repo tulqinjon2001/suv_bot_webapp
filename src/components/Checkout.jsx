@@ -1,13 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
-import { api } from '../api/client';
-import { getProfileData } from './Profile';
+import { useState, useEffect, useCallback } from "react";
+import { api } from "../api/client";
+import { getProfileData } from "./Profile";
+import LocationPicker from "./LocationPicker";
 
-export default function Checkout({ cart, total, customerId, onBack, onSuccess }) {
-  const [address, setAddress] = useState('');
+export default function Checkout({
+  cart,
+  total,
+  customerId,
+  onBack,
+  onSuccess,
+}) {
+  const [address, setAddress] = useState("");
   const [location, setLocation] = useState(null);
-  const [paymentType, setPaymentType] = useState('cash');
+  const [paymentType, setPaymentType] = useState("cash");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
@@ -22,17 +29,17 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
 
   const handleSubmit = useCallback(async () => {
     if (!customerId) {
-      setError('Mijoz ID topilmadi. Telegram orqali kirish kerak.');
+      setError("Mijoz ID topilmadi. Telegram orqali kirish kerak.");
       return;
     }
 
     if (!address.trim()) {
-      setError('Manzil kiritilishi shart');
+      setError("Manzil kiritilishi shart");
       return;
     }
 
     setSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       await api.orders.create({
@@ -48,12 +55,12 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
       });
 
       if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert('Buyurtma muvaffaqiyatli yuborildi!');
+        window.Telegram.WebApp.showAlert("Buyurtma muvaffaqiyatli yuborildi!");
       }
 
       onSuccess();
     } catch (e) {
-      setError(e.message || 'Buyurtma yuborishda xatolik');
+      setError(e.message || "Buyurtma yuborishda xatolik");
     } finally {
       setSubmitting(false);
     }
@@ -62,7 +69,7 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
-      tg.MainButton.setText('Buyurtmani yuborish');
+      tg.MainButton.setText("Buyurtmani yuborish");
       tg.MainButton.show();
       tg.MainButton.onClick(handleSubmit);
 
@@ -72,25 +79,6 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
       };
     }
   }, [handleSubmit]);
-
-  const requestLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setLocation({
-            lat: pos.coords.latitude,
-            long: pos.coords.longitude,
-          });
-        },
-        () => {
-          setError('Lokatsiya olishda xatolik');
-        }
-      );
-    } else {
-      setError('Lokatsiya qo\'llab-quvvatlanmaydi');
-    }
-  };
-
 
   return (
     <div>
@@ -103,10 +91,18 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
         {/* Profil ma'lumotlari */}
         {profileData && profileData.full_name && (
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-2 text-base font-semibold text-slate-900">Yetkazib berish ma'lumotlari</h3>
+            <h3 className="mb-2 text-base font-semibold text-slate-900">
+              Yetkazib berish ma'lumotlari
+            </h3>
             <div className="space-y-1 text-sm text-slate-600">
-              <p><span className="font-medium">Ism:</span> {profileData.full_name}</p>
-              <p><span className="font-medium">Telefon:</span> {profileData.phone}</p>
+              <p>
+                <span className="font-medium">Ism:</span>{" "}
+                {profileData.full_name}
+              </p>
+              <p>
+                <span className="font-medium">Telefon:</span>{" "}
+                {profileData.phone}
+              </p>
             </div>
           </div>
         )}
@@ -119,7 +115,7 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Manzilni kiriting..."
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             rows="3"
             required
           />
@@ -129,26 +125,10 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
           <label className="mb-1 block text-sm font-medium text-slate-700">
             Lokatsiya (ixtiyoriy)
           </label>
-          {location ? (
-            <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm">
-              <p className="text-slate-600">
-                📍 {location.lat.toFixed(6)}, {location.long.toFixed(6)}
-              </p>
-              <button
-                onClick={() => setLocation(null)}
-                className="mt-2 text-xs text-red-600 hover:underline"
-              >
-                O'chirish
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={requestLocation}
-              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-            >
-              📍 Lokatsiyani olish
-            </button>
-          )}
+          <LocationPicker
+            onSelect={(loc) => setLocation(loc)}
+            initialLocation={location}
+          />
         </div>
 
         <div>
@@ -158,7 +138,7 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
           <select
             value={paymentType}
             onChange={(e) => setPaymentType(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="cash">Naqd</option>
             <option value="card">Karta</option>
@@ -190,7 +170,7 @@ export default function Checkout({ cart, total, customerId, onBack, onSuccess })
           disabled={submitting || !address.trim()}
           className="w-full rounded-lg bg-blue-500 py-3 text-lg font-medium text-white hover:bg-blue-600 disabled:opacity-50"
         >
-          {submitting ? 'Yuborilmoqda…' : 'Buyurtmani yuborish'}
+          {submitting ? "Yuborilmoqda…" : "Buyurtmani yuborish"}
         </button>
       </div>
     </div>

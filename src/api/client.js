@@ -1,11 +1,11 @@
-// API base URL - development uchun proxy, production uchun environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
-const API = API_BASE_URL;
+// API base URL - development uchun proxy, production uchun Render backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+const API = import.meta.env.PROD ? import.meta.env.VITE_API_URL : API_BASE_URL;
 
 async function request(path, options = {}) {
-  const url = path.startsWith('http') ? path : `${API}${path}`;
+  const url = path.startsWith("http") ? path : `${API}${path}`;
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
   });
   if (res.status === 204) return null;
@@ -16,15 +16,16 @@ async function request(path, options = {}) {
 
 export const api = {
   products: {
-    list: () => request('/webapp/products'),
+    list: () => request("/webapp/products"),
   },
   categories: {
-    list: () => request('/webapp/categories'),
+    list: () => request("/webapp/categories"),
   },
   orders: {
-    create: (body) => request('/webapp/orders', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }),
+    create: (body) =>
+      request("/webapp/orders", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
 };
