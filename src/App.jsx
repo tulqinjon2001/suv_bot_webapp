@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { api } from "./api/client";
+import { api, getApiBase } from "./api/client";
 import ProductList from "./components/ProductList";
 import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
@@ -58,7 +58,8 @@ export default function App() {
 
   const fetchCustomerId = async (telegramId) => {
     try {
-      const res = await fetch(`/api/webapp/user/${telegramId}`);
+      const base = getApiBase();
+      const res = await fetch(`${base}/webapp/user/${telegramId}`);
       if (res.ok) {
         const data = await res.json();
         setCustomerId(data.id);

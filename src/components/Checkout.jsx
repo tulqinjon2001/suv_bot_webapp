@@ -28,13 +28,13 @@ export default function Checkout({
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!customerId) {
-      setError("Mijoz ID topilmadi. Telegram orqali kirish kerak.");
+    if (!address.trim()) {
+      setError("Manzil kiritilishi shart");
       return;
     }
 
-    if (!address.trim()) {
-      setError("Manzil kiritilishi shart");
+    if (!profileData || !profileData.phone) {
+      setError("Telefon raqam talab qilinadi");
       return;
     }
 
@@ -42,11 +42,21 @@ export default function Checkout({
     setError("");
 
     try {
+      // Telegram Web App-dan telegram_id olish (agar mavjud bo'lsa)
+      let telegramId = null;
+      if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+        telegramId = window.Telegram.WebApp.initDataUnsafe.user.id;
+      }
+
+      // Backend telefon raqam orqali mijozni topadi yoki yaratadi
       await api.orders.create({
-        customer_id: customerId,
+        phone: profileData.phone,
+        full_name: profileData.full_name || 'Mijoz',
+        telegram_id: telegramId,
         items: cart.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
+          price_at_purchase: item.product.price, // Narxni ham yuboramiz
         })),
         address: address.trim(),
         location_lat: location?.lat || null,
@@ -64,7 +74,7 @@ export default function Checkout({
     } finally {
       setSubmitting(false);
     }
-  }, [customerId, address, location, paymentType, cart, onSuccess]);
+  }, [profileData, address, location, paymentType, cart, onSuccess]);
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {

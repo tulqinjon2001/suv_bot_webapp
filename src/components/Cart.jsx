@@ -62,32 +62,21 @@ export default function Cart({ cart, onUpdate, onRemove, onBack, onSuccess, tota
     setError('');
 
     try {
-      // Telefon raqam asosida customer ID topish
-      let finalCustomerId = customerId;
-      
-      if (!finalCustomerId && profileData.phone) {
-        try {
-          const response = await fetch(`/api/webapp/user/phone/${encodeURIComponent(profileData.phone)}`);
-          if (response.ok) {
-            const userData = await response.json();
-            finalCustomerId = userData.id;
-          }
-        } catch (err) {
-          console.error('Telefon raqam asosida customer topishda xatolik:', err);
-        }
+      // Telegram Web App-dan telegram_id olish (agar mavjud bo'lsa)
+      let telegramId = null;
+      if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+        telegramId = window.Telegram.WebApp.initDataUnsafe.user.id;
       }
 
-      if (!finalCustomerId) {
-        setError('Mijoz ID topilmadi. Telegram orqali kirish kerak yoki profildagi telefon raqam botda ro\'yxatdan o\'tgan bo\'lishi kerak.');
-        setSubmitting(false);
-        return;
-      }
-
+      // Backend telefon raqam orqali mijozni topadi yoki yaratadi
       const response = await api.orders.create({
-        customer_id: finalCustomerId,
+        phone: profileData.phone,
+        full_name: profileData.full_name,
+        telegram_id: telegramId,
         items: cart.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
+          price_at_purchase: item.product.price, // Narxni ham yuboramiz
         })),
         address: profileData.address,
         location_lat: profileData.location?.lat || null,

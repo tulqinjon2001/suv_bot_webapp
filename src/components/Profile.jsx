@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import LocationPicker from "./LocationPicker";
+import { getApiBase } from "../api/client";
 
 const PROFILE_STORAGE_KEY = "suv_bot_profile";
 
@@ -15,7 +16,8 @@ export default function Profile({ customerId, onBack }) {
   useEffect(() => {
     // Backend'dan ma'lumotlarni yuklash (agar customerId bo'lsa)
     if (customerId) {
-      fetch(`/api/webapp/user/${customerId}`)
+      const base = getApiBase();
+      fetch(`${base}/webapp/user/${customerId}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.full_name) setFullName(data.full_name);
@@ -83,7 +85,8 @@ export default function Profile({ customerId, onBack }) {
       // Backend'ga yuborish (agar customerId bo'lsa)
       if (customerId) {
         try {
-          const res = await fetch(`/api/webapp/user/${customerId}`, {
+          const base = getApiBase();
+          const res = await fetch(`${base}/webapp/user/${customerId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

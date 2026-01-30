@@ -2,6 +2,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 const API = import.meta.env.PROD ? import.meta.env.VITE_API_URL : API_BASE_URL;
 
+// Barcha fetch chaqiruvlari uchun (App, Profile, OrdersHistory va boshqalar)
+export const getApiBase = () =>
+  (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+
 async function request(path, options = {}) {
   const url = path.startsWith("http") ? path : `${API}${path}`;
   const res = await fetch(url, {

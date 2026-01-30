@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { getApiBase } from "../api/client";
 
 const STATUS_LABELS = {
-  new: { label: 'Yangi', color: 'bg-blue-100 text-blue-800' },
-  confirmed: { label: 'Tasdiqlangan', color: 'bg-green-100 text-green-800' },
-  preparing: { label: "Yig'ilmoqda", color: 'bg-yellow-100 text-yellow-800' },
-  on_the_way: { label: "Yo'lda", color: 'bg-purple-100 text-purple-800' },
-  delivered: { label: 'Yetkazildi', color: 'bg-emerald-100 text-emerald-800' },
-  cancelled: { label: 'Bekor qilindi', color: 'bg-red-100 text-red-800' },
+  new: { label: "Yangi", color: "bg-blue-100 text-blue-800" },
+  confirmed: { label: "Tasdiqlangan", color: "bg-green-100 text-green-800" },
+  preparing: { label: "Yig'ilmoqda", color: "bg-yellow-100 text-yellow-800" },
+  on_the_way: { label: "Yo'lda", color: "bg-purple-100 text-purple-800" },
+  delivered: { label: "Yetkazildi", color: "bg-emerald-100 text-emerald-800" },
+  cancelled: { label: "Bekor qilindi", color: "bg-red-100 text-red-800" },
 };
 
 export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (customerId) {
@@ -26,15 +27,18 @@ export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
   const loadOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/webapp/customer/${customerId}/orders`);
+      const base = getApiBase();
+      const response = await fetch(
+        `${base}/webapp/customer/${customerId}/orders`,
+      );
       if (!response.ok) {
-        throw new Error('Buyurtmalarni yuklashda xatolik');
+        throw new Error("Buyurtmalarni yuklashda xatolik");
       }
       const data = await response.json();
       setOrders(Array.isArray(data) ? data : []);
-      setError('');
+      setError("");
     } catch (err) {
-      setError(err.message || 'Buyurtmalarni yuklashda xatolik');
+      setError(err.message || "Buyurtmalarni yuklashda xatolik");
       setOrders([]);
     } finally {
       setLoading(false);
@@ -44,7 +48,7 @@ export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
   const loadOrdersByPhone = async () => {
     try {
       setLoading(true);
-      const PROFILE_STORAGE_KEY = 'suv_bot_profile';
+      const PROFILE_STORAGE_KEY = "suv_bot_profile";
       const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (!saved) {
         setOrders([]);
@@ -59,24 +63,29 @@ export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
       }
 
       // Telefon raqam asosida customer ID topish
-      const userResponse = await fetch(`/api/webapp/user/phone/${encodeURIComponent(profile.phone)}`);
+      const base = getApiBase();
+      const userResponse = await fetch(
+        `${base}/webapp/user/phone/${encodeURIComponent(profile.phone)}`,
+      );
       if (!userResponse.ok) {
         setOrders([]);
         setLoading(false);
         return;
       }
       const userData = await userResponse.json();
-      
+
       // Customer ID asosida buyurtmalarni yuklash
-      const ordersResponse = await fetch(`/api/webapp/customer/${userData.id}/orders`);
+      const ordersResponse = await fetch(
+        `${base}/webapp/customer/${userData.id}/orders`,
+      );
       if (!ordersResponse.ok) {
-        throw new Error('Buyurtmalarni yuklashda xatolik');
+        throw new Error("Buyurtmalarni yuklashda xatolik");
       }
       const data = await ordersResponse.json();
       setOrders(Array.isArray(data) ? data : []);
-      setError('');
+      setError("");
     } catch (err) {
-      setError(err.message || 'Buyurtmalarni yuklashda xatolik');
+      setError(err.message || "Buyurtmalarni yuklashda xatolik");
       setOrders([]);
     } finally {
       setLoading(false);
@@ -88,7 +97,9 @@ export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
       <div>
         <header className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2">
-            <h2 className="flex-1 text-lg font-bold text-slate-900">Buyurtmalar tarixi</h2>
+            <h2 className="flex-1 text-lg font-bold text-slate-900">
+              Buyurtmalar tarixi
+            </h2>
           </div>
         </header>
         <div className="flex items-center justify-center py-12">
@@ -102,7 +113,9 @@ export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
     <div>
       <header className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <h2 className="flex-1 text-lg font-bold text-slate-900">Buyurtmalar tarixi</h2>
+          <h2 className="flex-1 text-lg font-bold text-slate-900">
+            Buyurtmalar tarixi
+          </h2>
         </div>
       </header>
       <div className="px-4 py-4 pb-24">
@@ -127,8 +140,12 @@ export default function OrdersHistory({ customerId, onBack, onViewOrder }) {
                   className="cursor-pointer rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-semibold text-slate-900">Buyurtma #{order.id}</span>
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${status.color}`}>
+                    <span className="font-semibold text-slate-900">
+                      Buyurtma #{order.id}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${status.color}`}
+                    >
                       {status.label}
                     </span>
                   </div>
